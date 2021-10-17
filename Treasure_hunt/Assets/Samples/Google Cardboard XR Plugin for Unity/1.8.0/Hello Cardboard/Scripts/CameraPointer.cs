@@ -35,8 +35,10 @@ public class CameraPointer : MonoBehaviour
         // Casts ray towards camera's forward direction, to detect if a GameObject is being gazed
         // at.
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, transform.forward, out hit, _maxDistance))
+        int mask =1 << 8 ;
+        if (Physics.Raycast(transform.position, transform.forward, out hit, _maxDistance,mask))
         {
+        
             Debug.Log("hit :  "+hit.transform.name);
             // GameObject detected in front of the camera.
             if (_gazedAtObject != hit.transform.gameObject)

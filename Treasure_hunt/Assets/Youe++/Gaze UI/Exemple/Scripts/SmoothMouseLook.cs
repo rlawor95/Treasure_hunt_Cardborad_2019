@@ -33,6 +33,7 @@ public class SmoothMouseLook : MonoBehaviour {
  
 	Quaternion originalRotation;
  
+ #if UNITY_EDITOR
 	void Update ()
 	{
 		if (axes == RotationAxes.MouseXAndY)
@@ -136,4 +137,6 @@ public class SmoothMouseLook : MonoBehaviour {
 		}
 		return Mathf.Clamp (angle, min, max);
 	}
+
+#endif	
 }
