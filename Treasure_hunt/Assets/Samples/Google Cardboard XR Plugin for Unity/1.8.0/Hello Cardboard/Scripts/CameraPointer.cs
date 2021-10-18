@@ -43,11 +43,17 @@ public class CameraPointer : MonoBehaviour
 
      [SerializeField, Tooltip("In seconds")]
     float m_loadingTime;
+    [SerializeField, Tooltip("Treasure Loading")]
+    float m_TreasureloadingTime;
     float m_elapsedTime = 0;
 
     bool isGaze = false;
+    bool isGazeTreasure = false;
 
     public Image FadePanel;
+
+    public Image GazeImage1;
+    public RawImage GazeImage2;
 
     void Start()
     {
@@ -76,10 +82,27 @@ public class CameraPointer : MonoBehaviour
                     m_elapsedTime=0;
                     m_onLoad.Invoke(m_elapsedTime / m_loadingTime);
                     isGaze = false;
-                    Debug.Log("Call back ! " + _gazedAtObject.name);
+                     isGazeTreasure=false;
+                    Teleport(_gazedAtObject.transform);     
+                }
+            }
+        }
+        else if(isGazeTreasure)
+        {
+            m_elapsedTime += Time.deltaTime;
+            m_onLoad.Invoke(m_elapsedTime / m_TreasureloadingTime);
 
-                    Teleport(_gazedAtObject.transform);
-                    
+            if (m_elapsedTime > m_TreasureloadingTime)
+            {
+                if(_gazedAtObject.tag.Contains("Treasure"))
+                {
+                    m_elapsedTime=0;
+                    m_onLoad.Invoke(m_elapsedTime / m_TreasureloadingTime);
+                    isGaze = false;
+                    isGazeTreasure=false;
+
+                    var chk = _gazedAtObject.GetComponent<Treasure>().Check();
+                    if (chk) GameManager.instance.FoundTreasure();
                 }
             }
         }
@@ -100,13 +123,21 @@ public class CameraPointer : MonoBehaviour
                 if (hit.transform.tag.Contains("Teleport"))
                 { 
                     //_gazedAtObject.SendMessage("OnPointerEnter");
+                    ChangeGazeColor(false);
                     isGaze = true;
+                    isGazeTreasure=false;
                     // Debug.Log("asd22");
                     // GazeImage.DOFillAmount(1,1.0f).OnComplete(()=>
                     // {
                     //     Debug.Log("Gaze");
                     // });
 
+                }
+                else if(hit.transform.tag.Contains("Treasure"))
+                {
+                    ChangeGazeColor(true);
+                    isGaze = false;
+                    isGazeTreasure=true;
                 }
             }
 
@@ -116,7 +147,7 @@ public class CameraPointer : MonoBehaviour
             m_elapsedTime = 0;
              m_onLoad.Invoke(m_elapsedTime / m_loadingTime);
             isGaze = false;
-
+             isGazeTreasure=false;
             //_gazedAtObject?.SendMessage("OnPointerExit");
             _gazedAtObject = null;
         }
@@ -126,9 +157,23 @@ public class CameraPointer : MonoBehaviour
     {
         FadePanel.DOFade(1,0.5f).OnComplete(()=>
         {
-            this.transform.position = new Vector3(location.position.x, location.position.y + 1f, location.position.z);
+            this.transform.parent.position = new Vector3(location.position.x, location.position.y + 1f, location.position.z);
             FadePanel.DOFade(0, 0.5f);
         });
+    }
+
+    private void ChangeGazeColor(bool b) // true : 보물 오브젝, false : 나머지 
+    {
+        if(b)
+        {
+            GazeImage1.color = Color.yellow;
+            GazeImage2.color = Color.yellow;
+        }
+        else
+        {
+            GazeImage1.color = Color.white;
+            GazeImage2.color = Color.white;
+        }
     }
 
 
