@@ -35,21 +35,23 @@ using XRSettings = UnityEngine.VR.VRSettings;
 public class CameraPointer : MonoBehaviour
 {
     private const float _maxDistance = 10;
-    private GameObject _gazedAtObject = null;
-    EventSystem m_eventSystem;
-    PointerEventData m_pointerEvent;
+    public GameObject _gazedAtObject = null;
 
-    public Image GazeImage;
 
-    public Selectable m_currentSelectable;
-    IPointerClickHandler m_clickHandler;
+    [SerializeField]
+    FloatUnityEvent m_onLoad;
 
+     [SerializeField, Tooltip("In seconds")]
+    float m_loadingTime;
+    float m_elapsedTime = 0;
+
+    bool isGaze = false;
+
+    public Image FadePanel;
 
     void Start()
     {
-        m_eventSystem = EventSystem.current;
-        m_pointerEvent = new PointerEventData(m_eventSystem);
-        m_pointerEvent.button = PointerEventData.InputButton.Left;
+   
     }
 
     /// <summary>
@@ -61,85 +63,103 @@ public class CameraPointer : MonoBehaviour
         {
             GameRaycast();
         }
-        else
+
+        if(isGaze)
         {
-            UIRaycast();
-        }
+            m_elapsedTime += Time.deltaTime;
+            m_onLoad.Invoke(m_elapsedTime / m_loadingTime);
 
-    }
-
-    private void UIRaycast()
-    {
-        m_pointerEvent.position =
-#if UNITY_EDITOR
-            new Vector2(Screen.width / 2, Screen.height / 2);
-#else
-            new Vector2(XRSettings.eyeTextureWidth / 2, XRSettings.eyeTextureHeight / 2);
-#endif
-
-        List<RaycastResult> raycastResults = new List<RaycastResult>();
-        m_eventSystem.RaycastAll(m_pointerEvent, raycastResults);
-
-        if (raycastResults.Count > 0)
-        {
-            var newSelectable = raycastResults[0].gameObject.GetComponentInParent<Selectable>();
-          
-            if(m_currentSelectable != newSelectable)
+            if (m_elapsedTime > m_loadingTime)
             {
-                GazeOff();
-                Debug.Log("gaze  " + newSelectable);
-                GazeOn(newSelectable);
-                m_currentSelectable = newSelectable;
+                if(_gazedAtObject.tag.Contains("Teleport"))
+                {
+                    m_elapsedTime=0;
+                    m_onLoad.Invoke(m_elapsedTime / m_loadingTime);
+                    isGaze = false;
+                    Debug.Log("Call back ! " + _gazedAtObject.name);
+
+                    Teleport(_gazedAtObject.transform);
+                    
+                }
             }
-        }
-        else
-        {
-            m_currentSelectable = null;
-            GazeOff();
         }
     }
 
     private void GameRaycast()
     {
         RaycastHit hit;
-        int mask = (1 << 8);
+        int mask = (1 << 10);
 
         if (Physics.Raycast(transform.position, transform.forward, out hit, _maxDistance, mask))
         {
+            //Debug.Log("hit " + hit.transform.name);
             if (_gazedAtObject != hit.transform.gameObject)
             {
-                // New GameObject.
-                _gazedAtObject?.SendMessage("OnPointerExit");
+                
                 _gazedAtObject = hit.transform.gameObject;
-                _gazedAtObject.SendMessage("OnPointerEnter");
+                if (hit.transform.tag.Contains("Teleport"))
+                { 
+                    //_gazedAtObject.SendMessage("OnPointerEnter");
+                    isGaze = true;
+                    // Debug.Log("asd22");
+                    // GazeImage.DOFillAmount(1,1.0f).OnComplete(()=>
+                    // {
+                    //     Debug.Log("Gaze");
+                    // });
+
+                }
             }
+
         }
         else
         {
-            // No GameObject detected in front of the camera.
-            _gazedAtObject?.SendMessage("OnPointerExit");
-            _gazedAtObject = null;
-        }
+            m_elapsedTime = 0;
+             m_onLoad.Invoke(m_elapsedTime / m_loadingTime);
+            isGaze = false;
 
-        // Checks for screen touches.
-        if (Google.XR.Cardboard.Api.IsTriggerPressed)
-        {
-            _gazedAtObject?.SendMessage("OnPointerClick");
+            //_gazedAtObject?.SendMessage("OnPointerExit");
+            _gazedAtObject = null;
         }
     }
 
-    void GazeOn(Selectable selectable)
+    private void Teleport(Transform location)
     {
-        m_clickHandler = selectable.GetComponent<IPointerClickHandler>();
-
-        GazeImage.DOFillAmount(1,1.0f).OnComplete(() =>{
-            Debug.Log("Gaze " + selectable.name);
-            m_clickHandler.OnPointerClick(m_pointerEvent);
+        FadePanel.DOFade(1,0.5f).OnComplete(()=>
+        {
+            this.transform.position = new Vector3(location.position.x, location.position.y + 1f, location.position.z);
+            FadePanel.DOFade(0, 0.5f);
         });
     }
 
-    void GazeOff()
-    {
-        GazeImage.fillAmount = 0;
-    }
+
+    // private void GameRaycast()
+    // {
+    //     RaycastHit hit;
+    //     int mask = (1 << 10);
+
+    //     if (Physics.Raycast(transform.position, transform.forward, out hit, _maxDistance, mask))
+    //     {
+    //         Debug.Log("game ray " + hit.transform.name);
+
+    //         if (_gazedAtObject != hit.transform.gameObject)
+    //         {
+    //             // New GameObject.
+    //             _gazedAtObject?.SendMessage("OnPointerExit");
+    //             _gazedAtObject = hit.transform.gameObject;
+    //             _gazedAtObject.SendMessage("OnPointerEnter");
+    //         }
+    //     }
+    //     else
+    //     {
+    //         // No GameObject detected in front of the camera.
+    //         _gazedAtObject?.SendMessage("OnPointerExit");
+    //         _gazedAtObject = null;
+    //     }
+
+    //     // // Checks for screen touches.
+    //     // if (Google.XR.Cardboard.Api.IsTriggerPressed)
+    //     // {
+    //     //     _gazedAtObject?.SendMessage("OnPointerClick");
+    //     // }
+    // }
 }
