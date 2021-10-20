@@ -4,23 +4,27 @@ using UnityEngine;
 
 public class Treasure : MonoBehaviour
 {
+    public TreasureType Type;
     [SerializeField] private bool IsThisTreasure;
 
     public void Init()
     {
         this.GetComponent<MeshCollider>().enabled = true;
+        this.name = "--";
         IsThisTreasure=false;
     }
 
+ 
     public bool GetTreasure()
     {
         return IsThisTreasure;
     }
 
-    public void SetTreasure()
+    public void SetTreasure(TreasureType type)
     {
         IsThisTreasure = true;
         this.name = "Treasure ! ";
+        this.Type = type;
     }
 
     public bool Check()

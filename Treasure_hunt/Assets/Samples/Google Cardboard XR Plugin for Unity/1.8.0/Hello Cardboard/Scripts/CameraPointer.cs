@@ -34,6 +34,8 @@ using XRSettings = UnityEngine.VR.VRSettings;
 /// </summary>
 public class CameraPointer : MonoBehaviour
 {
+    public static CameraPointer instance = null;
+
     private const float _maxDistance = 10;
     public GameObject _gazedAtObject = null;
 
@@ -55,9 +57,21 @@ public class CameraPointer : MonoBehaviour
     public Image GazeImage1;
     public RawImage GazeImage2;
 
+    private GameObject tempTeleport = null;
+
     void Start()
     {
-   
+        if (instance == null)
+            instance = this;
+    }
+
+    public void GameOver()
+    {
+        m_elapsedTime = 0;
+        m_onLoad.Invoke(m_elapsedTime / m_loadingTime);
+        isGaze = false;
+        isGazeTreasure = false;
+        _gazedAtObject = null;
     }
 
     /// <summary>
@@ -82,8 +96,12 @@ public class CameraPointer : MonoBehaviour
                     m_elapsedTime=0;
                     m_onLoad.Invoke(m_elapsedTime / m_loadingTime);
                     isGaze = false;
-                     isGazeTreasure=false;
+                    isGazeTreasure=false;
                     Teleport(_gazedAtObject.transform);     
+
+                    tempTeleport?.SetActive(true); 
+                    tempTeleport = _gazedAtObject;
+                    tempTeleport.SetActive(false);
                 }
             }
         }
@@ -102,7 +120,18 @@ public class CameraPointer : MonoBehaviour
                     isGazeTreasure=false;
 
                     var chk = _gazedAtObject.GetComponent<Treasure>().Check();
-                    if (chk) GameManager.instance.FoundTreasure();
+
+                    if (chk) 
+                    {
+                        GameManager.instance.FoundTreasure();
+                        AnswerPanel.instance.ShowPanel(true);
+                        SoundManager.instance.PlayCorrectSound();
+                    }
+                    else
+                    {
+                        AnswerPanel.instance.ShowPanel(false);
+                        SoundManager.instance.PlayInCorrectSound();
+                    }
                 }
             }
         }
@@ -126,12 +155,11 @@ public class CameraPointer : MonoBehaviour
                     ChangeGazeColor(false);
                     isGaze = true;
                     isGazeTreasure=false;
-                    // Debug.Log("asd22");
+    
                     // GazeImage.DOFillAmount(1,1.0f).OnComplete(()=>
                     // {
                     //     Debug.Log("Gaze");
                     // });
-
                 }
                 else if(hit.transform.tag.Contains("Treasure"))
                 {
@@ -153,8 +181,9 @@ public class CameraPointer : MonoBehaviour
         }
     }
 
-    private void Teleport(Transform location)
+    public void Teleport(Transform location)
     {
+        SoundManager.instance.PlayTeleporSound();
         FadePanel.DOFade(1,0.5f).OnComplete(()=>
         {
             this.transform.parent.position = new Vector3(location.position.x, location.position.y + 1f, location.position.z);

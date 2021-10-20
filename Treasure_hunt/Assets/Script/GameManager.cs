@@ -30,6 +30,13 @@ public class GameManager : MonoBehaviour
 
     public GameObject TreasureParent;
 
+
+    public GameObject GameOverCanvas;
+    public Transform Player;
+
+    public Transform OriginPosition;
+
+
     void Awake()
     {
         if (instance == null)
@@ -42,40 +49,83 @@ public class GameManager : MonoBehaviour
         TreasureCntText.text = TreasureCnt.ToString();
     }
 
+    void Update()
+    {
+        
+    }
+
+    public void ShowSettingPanel()
+    {
+        canvas.gameObject.SetActive(true);
+    }
+
     void InitTreasure()
     {
-        var treasures = TreasureParent.GetComponentsInChildren<Treasure>();
 
-        float seed = UnityEngine.Time.time * 100f;
-        Random.InitState((int)seed);
-        for (int i = 0; i < TreasureCnt; i++)
-        {
 
-            int rnd = Random.Range(0, treasures.Length);
-            while (treasures[rnd].GetTreasure())
-            {
-                rnd = Random.Range(0, treasures.Length);
-            }
+        // var treasures = TreasureParent.GetComponentsInChildren<Treasure>();
 
-            treasures[rnd].SetTreasure();
+        // foreach(var item in treasures)
+        // {
+        //     item.Init();
+        // }
 
-        }
+        // float seed = UnityEngine.Time.time * 100f;
+        // Random.InitState((int)seed);
+        // for (int i = 0; i < TreasureCnt; i++)
+        // {
+        //     int rnd = Random.Range(0, treasures.Length);
+        //     while (treasures[rnd].GetTreasure())
+        //     {
+        //         rnd = Random.Range(0, treasures.Length);
+        //     }
+
+        //     treasures[rnd].SetTreasure();
+        // }
     }
 
     public void FoundTreasure()
     {
-         TreasureCnt--;
-         CurTreasureUIText.text = TreasureCnt.ToString();
+        TreasureCnt--;
+        CurTreasureUIText.text = TreasureCnt.ToString();
         if(TreasureCnt==0)
         {
-            GameOver();
+            GameStart = false;
+            CameraPointer.instance.GameOver();
+            StopAllCoroutines();
+            StartCoroutine(GameOver());
+
         }
-        
     }
 
-    private void GameOver()
+    private IEnumerator GameOver()
     {
-        Debug.Log("GameOVer ! ");
+        yield return new WaitForSeconds(1.0f);
+        CameraPointer.instance.Teleport(OriginPosition);
+        
+    
+        TimeUI.gameObject.SetActive(false);
+        TreasureUI.gameObject.SetActive(false);
+
+        canvas.gameObject.SetActive(true);
+        Time = 3;
+        TreasureCnt = 1;
+        TreasureCntText.text = TreasureCnt.ToString();
+        TimeText.text = Time.ToString();
+        InfToggle.isOn = false;
+
+        //GameOverCanvas.transform.position = Player.position + Player.forward * 10f;
+        //GameOverCanvas.gameObject.SetActive(true);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    public void ReStartGame()
+    {
+        GameOverCanvas.gameObject.SetActive(false);
     }
 
     public void StartClick()
@@ -86,10 +136,34 @@ public class GameManager : MonoBehaviour
         TimeUI.gameObject.SetActive(true);
         TreasureUI.gameObject.SetActive(true);
 
-        CurTimeUIText.text = TimeText.text;
+       
         CurTreasureUIText.text = TreasureCntText.text;
 
-        InitTreasure(); // 보물 초기화
+        TreasureManager.instance.TreasureInit(TreasureCnt);
+        //InitTreasure(); // 보물 초기화
+
+        if (TimeText.text != "INF")
+        {
+            var t = Time * 60;
+            CurTimeUIText.text = t.ToString();
+            StartCoroutine(TimeUICheck(t));
+        }
+        else
+            CurTimeUIText.text = "INF";
+    }
+
+    IEnumerator TimeUICheck(int time)
+    {
+        Debug.Log("TimeUICheck");
+
+        while (time > 0)
+        {
+            yield return new WaitForSeconds(1.0f);
+            time--;
+            CurTimeUIText.text = time.ToString();
+        }
+
+        StartCoroutine(GameOver());
     }
 
     public void TreasureIncrease()
