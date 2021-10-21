@@ -32,9 +32,15 @@ public class GameManager : MonoBehaviour
 
 
     public GameObject GameOverCanvas;
+
     public Transform Player;
 
     public Transform OriginPosition;
+
+    
+    public int GetBigDia;
+    public int GetBlueDia;
+    public int GetRedDia;
 
 
     void Awake()
@@ -84,8 +90,21 @@ public class GameManager : MonoBehaviour
         // }
     }
 
-    public void FoundTreasure()
+    public void FoundTreasure(TreasureType type)
     {
+        switch (type)
+        {
+            case TreasureType.BIG:
+                GetBigDia++;
+                break;
+            case TreasureType.BLUE:
+                GetBlueDia++;
+                break;
+            case TreasureType.RED:
+                GetRedDia++;
+                break;
+        }
+
         TreasureCnt--;
         CurTreasureUIText.text = TreasureCnt.ToString();
         if(TreasureCnt==0)
@@ -93,17 +112,40 @@ public class GameManager : MonoBehaviour
             GameStart = false;
             CameraPointer.instance.GameOver();
             StopAllCoroutines();
-            StartCoroutine(GameOver());
+            GameOver();
 
         }
     }
 
-    private IEnumerator GameOver()
+    public void GameOver()
     {
+        GameOverCanvas.GetComponent<GameoverPanel>().SetUIInfo(GetBigDia, GetBlueDia, GetRedDia);
+        GameOverCanvas.SetActive(true);
+        GameOverCanvas.transform.position = CameraPointer.instance.transform.position + CameraPointer.instance.transform.forward * 2.5f;
+        GameOverCanvas.transform.forward = CameraPointer.instance.transform.forward;
+
+        GameOverCanvas.transform.localEulerAngles = new Vector3(0, GameOverCanvas.transform.localEulerAngles.y, GameOverCanvas.transform.localEulerAngles.z);
+        GameOverCanvas.transform.position = new Vector3(GameOverCanvas.transform.position.x, 2, GameOverCanvas.transform.position.z);
+    }
+
+    public void ReStartBtnCliekEvent()
+    {
+        StartCoroutine(GameRestart());
+    }
+
+    private IEnumerator GameRestart()
+    {
+        GetBigDia = 0;
+        GetBlueDia = 0;
+        GetRedDia = 0;
+        TreasureManager.instance.GameReSet();
+
+        GameOverCanvas.SetActive(false);
+
         yield return new WaitForSeconds(1.0f);
         CameraPointer.instance.Teleport(OriginPosition);
-        
-    
+
+
         TimeUI.gameObject.SetActive(false);
         TreasureUI.gameObject.SetActive(false);
 
@@ -121,11 +163,6 @@ public class GameManager : MonoBehaviour
     public void QuitGame()
     {
         Application.Quit();
-    }
-
-    public void ReStartGame()
-    {
-        GameOverCanvas.gameObject.SetActive(false);
     }
 
     public void StartClick()
@@ -163,7 +200,7 @@ public class GameManager : MonoBehaviour
             CurTimeUIText.text = time.ToString();
         }
 
-        StartCoroutine(GameOver());
+        GameOver();
     }
 
     public void TreasureIncrease()
@@ -188,10 +225,12 @@ public class GameManager : MonoBehaviour
 
     public void TimeIncrease()
     {
-        Debug.Log("TimeIncrease ");
+        if(Time>10 || TimeText.text=="INF")
+            return;
+
         if (Time > 10)
         {
-            TimeText.text = "INF";
+           // TimeText.text = "INF";
         }
         else
         {
@@ -202,6 +241,9 @@ public class GameManager : MonoBehaviour
 
     public void TimeDecrease()
     {
+        if(TimeText.text=="INF")
+            return;
+
         if (Time > 3)
         {
             Time--;

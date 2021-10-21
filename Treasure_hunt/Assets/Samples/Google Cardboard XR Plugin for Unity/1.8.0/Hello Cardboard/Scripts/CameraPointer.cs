@@ -121,10 +121,16 @@ public class CameraPointer : MonoBehaviour
 
                     var chk = _gazedAtObject.GetComponent<Treasure>().Check();
 
-                    if (chk) 
-                    {
-                        GameManager.instance.FoundTreasure();
-                        AnswerPanel.instance.ShowPanel(true);
+                    if (chk)
+                    {    
+                        TreasureType type = TreasureType.NONE;
+                        if (_gazedAtObject != null)
+                         type = _gazedAtObject.GetComponent<Treasure>().Type;
+
+                         Debug.Log(type);
+                        GameManager.instance.FoundTreasure(type);
+                    
+                            AnswerPanel.instance.ShowPanel(true, type);
                         SoundManager.instance.PlayCorrectSound();
                     }
                     else

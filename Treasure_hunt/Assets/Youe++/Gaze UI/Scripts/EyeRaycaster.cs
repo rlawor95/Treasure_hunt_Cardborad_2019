@@ -14,6 +14,8 @@ public class FloatUnityEvent : UnityEvent<float> { }
 
 public class EyeRaycaster : MonoBehaviour
 {
+    public static EyeRaycaster instance = null;
+
     [SerializeField, Tooltip("In seconds")]
     float m_loadingTime;
     [SerializeField]
@@ -34,6 +36,9 @@ public class EyeRaycaster : MonoBehaviour
 
     private void Start()
     {
+        if (instance == null)
+            instance = this;
+
         m_eventSystem = EventSystem.current;
         m_pointerEvent = new PointerEventData(m_eventSystem);
         m_pointerEvent.button = PointerEventData.InputButton.Left;
