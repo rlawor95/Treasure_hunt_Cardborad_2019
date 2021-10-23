@@ -39,6 +39,7 @@ public class TreasureManager : MonoBehaviour
 
     public void TreasureInit(int count)
     {
+        Debug.Log("TreasureInit 1");
         var treasures = TreasureObjectParent.GetComponentsInChildren<Treasure>();
 
         foreach (var item in treasures)
@@ -46,13 +47,12 @@ public class TreasureManager : MonoBehaviour
             item.Init();
         }
 
-
-
         for (int i = 0; i < count; i++)
         {
             float seed = UnityEngine.Time.time * 100f;
             Random.InitState((int)seed);
             int rnd = Random.Range(0, treasures.Length);
+
             while (treasures[rnd].GetTreasure())
             {
                 rnd = Random.Range(0, treasures.Length);
@@ -61,10 +61,12 @@ public class TreasureManager : MonoBehaviour
             var Type = PickTreasureType();
             treasures[rnd].SetTreasure(Type);
         }
+        Debug.Log("TreasureInit 2");
     }
 
     TreasureType PickTreasureType()
     {
+        Debug.Log("PickTreasureType 1");
         float seed = UnityEngine.Time.time * 23;
         Random.InitState((int)seed);
 
@@ -88,6 +90,7 @@ public class TreasureManager : MonoBehaviour
         else if (rnd == 2)
             result = TreasureType.RED;
 
+        Debug.Log("PickTreasureType 2");
         return result;
     }
 

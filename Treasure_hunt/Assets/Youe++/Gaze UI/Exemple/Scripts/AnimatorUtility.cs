@@ -10,5 +10,6 @@ public class AnimatorUtility : MonoBehaviour
 	public void SetFloat(float value)
 	{
 		m_animator.SetFloat(m_parameterName, value);
+		
 	}
 }

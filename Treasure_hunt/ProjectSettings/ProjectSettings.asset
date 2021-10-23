@@ -134,7 +134,7 @@ PlayerSettings:
   vrSettings:
     cardboard:
       depthFormat: 0
-      enableTransitionView: 0
+      enableTransitionView: 1
     daydream:
       depthFormat: 0
       useSustainedPerformanceMode: 0
@@ -247,15 +247,15 @@ PlayerSettings:
   AndroidTargetArchitectures: 3
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: 
-  AndroidKeyaliasName: 
+  AndroidKeystoreName: '{inproject}: user.keystore'
+  AndroidKeyaliasName: treasure_hunt
   AndroidBuildApkPerCpuArchitecture: 0
   AndroidTVCompatibility: 0
   AndroidIsGame: 1
   AndroidEnableTango: 0
   androidEnableBanner: 1
   androidUseLowAccuracyLocation: 0
-  androidUseCustomKeystore: 0
+  androidUseCustomKeystore: 1
   m_AndroidBanners:
   - width: 320
     height: 180
@@ -424,6 +424,11 @@ PlayerSettings:
     m_Devices:
     - Oculus
     - OpenVR
+  - m_BuildTarget: Android
+    m_Enabled: 0
+    m_Devices:
+    - None
+    - cardboard
   openGLRequireES31: 0
   openGLRequireES31AEP: 0
   openGLRequireES32: 0

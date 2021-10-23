@@ -11,16 +11,19 @@ public class GameoverPanel : MonoBehaviour
     public Text BlueDiaCntText;
     public Text RedDiaCntText;
 
+    public Text TimeText;
+
     void Start()
     {
         if (instance == null)
             instance = this;
     }
 
-    public void SetUIInfo(int big, int blue, int red)
+    public void SetUIInfo(int big, int blue, int red, string time)
     {
         BigDiaCntText.text = big.ToString();
         BlueDiaCntText.text = blue.ToString();
         RedDiaCntText.text = red.ToString();
+        TimeText.text = time;
     }
 }

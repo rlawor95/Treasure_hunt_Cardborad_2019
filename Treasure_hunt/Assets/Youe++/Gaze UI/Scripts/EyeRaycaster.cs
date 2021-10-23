@@ -47,12 +47,16 @@ public class EyeRaycaster : MonoBehaviour
     void Update()
     {
         // Set pointer position
-        m_pointerEvent.position =
 #if UNITY_EDITOR
-            new Vector2(Screen.width / 2, Screen.height / 2);
+        m_pointerEvent.position = new Vector2(Screen.width / 2, Screen.height / 2);
 #else
-            new Vector2(XRSettings.eyeTextureWidth / 2, XRSettings.eyeTextureHeight / 2);
+    if(GameManager.NormalMode)
+         m_pointerEvent.position = new Vector2(Screen.width / 2, Screen.height / 2);
+    else
+        m_pointerEvent.position=  new Vector2(XRSettings.eyeTextureWidth / 2, XRSettings.eyeTextureHeight / 2);
+    
 #endif
+
 
         List<RaycastResult> raycastResults = new List<RaycastResult>();
         m_eventSystem.RaycastAll(m_pointerEvent, raycastResults);

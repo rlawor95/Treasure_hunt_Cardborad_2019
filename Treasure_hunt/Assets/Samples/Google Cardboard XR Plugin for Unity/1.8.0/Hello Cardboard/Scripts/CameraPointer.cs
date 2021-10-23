@@ -36,6 +36,8 @@ public class CameraPointer : MonoBehaviour
 {
     public static CameraPointer instance = null;
 
+    //public static bool nomalMode = false;
+
     private const float _maxDistance = 10;
     public GameObject _gazedAtObject = null;
 
@@ -63,6 +65,9 @@ public class CameraPointer : MonoBehaviour
     {
         if (instance == null)
             instance = this;
+
+       // nomalMode = true;
+        
     }
 
     public void GameOver()
@@ -74,11 +79,29 @@ public class CameraPointer : MonoBehaviour
         _gazedAtObject = null;
     }
 
+    public void GazeInit()
+    {
+        m_elapsedTime = 0;
+        m_onLoad.Invoke(m_elapsedTime / m_loadingTime);
+         isGaze = false;
+        isGazeTreasure = false;
+        _gazedAtObject = null;
+    }
+
     /// <summary>
     /// Update is called once per frame.
     /// </summary>
     public void Update()
     {
+        // if(nomalMode)
+        // {
+        //     //   transform.parent.Rotate(Input.gyro.rotationRateUnbiased.x, Input.gyro.rotationRateUnbiased.y, Input.gyro.rotationRateUnbiased.z);
+        //     Vector3 angleAcceler = Input.acceleration;
+        //     Debug.Log("acceleration " + angleAcceler);
+
+            
+        // }
+
         if(GameManager.GameStart)
         {
             GameRaycast();
@@ -190,11 +213,11 @@ public class CameraPointer : MonoBehaviour
     public void Teleport(Transform location)
     {
         SoundManager.instance.PlayTeleporSound();
-        FadePanel.DOFade(1,0.5f).OnComplete(()=>
-        {
-            this.transform.parent.position = new Vector3(location.position.x, location.position.y + 1f, location.position.z);
-            FadePanel.DOFade(0, 0.5f);
-        });
+        FadePanel.DOFade(1, 0.5f).OnComplete(() =>
+         {
+             this.transform.parent.position = new Vector3(location.position.x, location.position.y + 1f, location.position.z);
+             FadePanel.DOFade(0, 0.5f);
+         });
     }
 
     private void ChangeGazeColor(bool b) // true : 보물 오브젝, false : 나머지 
