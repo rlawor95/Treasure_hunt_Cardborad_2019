@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour
     public Text TimeText;
     public Text TreasureCntText;
     public Toggle InfToggle;
-    
+
 
     public int Time = 3;
     public int TreasureCnt = 1;
@@ -24,8 +24,8 @@ public class GameManager : MonoBehaviour
 
 
     // 게임 진행중 떠있는 UI /==============
-    public GameObject TimeUI; 
-    public GameObject TreasureUI; 
+    public GameObject TimeUI;
+    public GameObject TreasureUI;
     public Text CurTimeUIText;
     public Text CurTreasureUIText;
 
@@ -40,7 +40,7 @@ public class GameManager : MonoBehaviour
 
     public Transform OriginPosition;
 
-    
+
     public int GetBigDia;
     public int GetBlueDia;
     public int GetRedDia;
@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
 
     public Camera cam;
 
-
+    public GameObject QuitCanvas;
 
     // public Camera VRCAM;
     // public Camera NORMALCAM;
@@ -83,11 +83,23 @@ public class GameManager : MonoBehaviour
 
         //var tracking = InputTracking.GetLocalRotation(XRNode.CenterEye);
         //DebugTxt.text = tracking.eulerAngles.x.ToString() + " " + tracking.eulerAngles.y.ToString() + " " + tracking.eulerAngles.z.ToString();
-        
-        
+
+#if UNITY_ANDROID
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            CameraPointer.instance.GazeInit();
+            DisableVR();
+            NormalMode = true;
+            
+            QuitCanvas.gameObject.SetActive(true);
+        }
+#endif
 
 
-        if(Input.GetMouseButtonDown(0))
+        if (QuitCanvas.gameObject.activeSelf)
+            return;
+
+        if (Input.GetMouseButtonDown(0))
         {
             // if (NormalMode)
             // {
@@ -112,13 +124,13 @@ public class GameManager : MonoBehaviour
                 CameraPointer.instance.GazeInit();
                 DisableVR();
                 NormalMode = true;
-               // SwitchTo2D();
+                // SwitchTo2D();
             }
             else
             {
                 //DisableVR();
-                 //DebugTxt.text = "go Enable" + " 1";
-                 CameraPointer.instance.GazeInit();
+                //DebugTxt.text = "go Enable" + " 1";
+                CameraPointer.instance.GazeInit();
                 EnableVR();
                 NormalMode = false;
                 //cam.fieldOfView = tempfov;
@@ -143,32 +155,42 @@ public class GameManager : MonoBehaviour
         // }
     }
 
+    public void QuitCanvasYesBtnClick()
+    {
+        Application.Quit();
+    }
+
+    public void QuitCanvasNoBtnClick()
+    {
+        QuitCanvas.SetActive(false);
+    }
+
     IEnumerator LoadDevice(string newDevice, bool enable)
     {
-        
+
         XRSettings.LoadDeviceByName(newDevice);
         yield return null;
         XRSettings.enabled = enable;
 
-       // DebugTxt.text = "LD : " + XRSettings.loadedDeviceName + " " + XRSettings.enabled;
+        // DebugTxt.text = "LD : " + XRSettings.loadedDeviceName + " " + XRSettings.enabled;
     }
 
     void EnableVR()
     {
         //DebugTxt.text = "EnableVR 2";
         //StartCoroutine(LoadDevice("CardboardDisplay", true));
-       
-       StartCoroutine(StartXR());
-       GyroControl.instance.StopGyro();
+
+        StartCoroutine(StartXR());
+        GyroControl.instance.StopGyro();
     }
 
     void DisableVR()
     {
         //DebugTxt.text = "DisableVR 2";
         // StartCoroutine(LoadDevice("", false));
-       
-       StopXR();
-       GyroControl.instance.StartGyro();
+
+        StopXR();
+        GyroControl.instance.StartGyro();
     }
 
     public void ShowSettingPanel()
@@ -185,24 +207,24 @@ public class GameManager : MonoBehaviour
 
         if (XRGeneralSettings.Instance.Manager.activeLoader == null)
         {
-            DebugTxt.text =  "Initializing XR Failed. Check Editor or Player log for details.";
+            DebugTxt.text = "Initializing XR Failed. Check Editor or Player log for details.";
         }
-        else 
+        else
         {
-             DebugTxt.text =  "Starting XR...";
+            DebugTxt.text = "Starting XR...";
             XRGeneralSettings.Instance.Manager.StartSubsystems();
-          
+
             //CameraPointer.nomalMode = false;
         }
     }
 
     void StopXR()
     {
-       DebugTxt.text = "Stopping XR...";
+        DebugTxt.text = "Stopping XR...";
 
         XRGeneralSettings.Instance.Manager.StopSubsystems();
         XRGeneralSettings.Instance.Manager.DeinitializeLoader();
-        DebugTxt.text =  "XR stopped completely.";
+        DebugTxt.text = "XR stopped completely.";
 
         // tempfov = cam.fieldOfView;
         // cam.fieldOfView = 60;
@@ -341,7 +363,7 @@ public class GameManager : MonoBehaviour
 
         TreasureCnt--;
         CurTreasureUIText.text = TreasureCnt.ToString();
-        if(TreasureCnt==0)
+        if (TreasureCnt == 0)
         {
             GameStart = false;
             CameraPointer.instance.GameOver();
@@ -408,7 +430,7 @@ public class GameManager : MonoBehaviour
         TimeUI.gameObject.SetActive(true);
         TreasureUI.gameObject.SetActive(true);
 
-       
+
         CurTreasureUIText.text = TreasureCntText.text;
 
         TreasureManager.instance.TreasureInit(TreasureCnt);
@@ -423,7 +445,7 @@ public class GameManager : MonoBehaviour
         else
             CurTimeUIText.text = "INF";
 
-            Debug.Log("StartClick 2 ");
+        Debug.Log("StartClick 2 ");
     }
 
     IEnumerator TimeUICheck(int time)
@@ -462,12 +484,12 @@ public class GameManager : MonoBehaviour
 
     public void TimeIncrease()
     {
-        if(Time>10 || TimeText.text=="INF")
+        if (Time > 10 || TimeText.text == "INF")
             return;
 
         if (Time > 10)
         {
-           // TimeText.text = "INF";
+            // TimeText.text = "INF";
         }
         else
         {
@@ -478,7 +500,7 @@ public class GameManager : MonoBehaviour
 
     public void TimeDecrease()
     {
-        if(TimeText.text=="INF")
+        if (TimeText.text == "INF")
             return;
 
         if (Time > 3)
